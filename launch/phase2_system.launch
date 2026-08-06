@@ -1,6 +1,10 @@
 <launch>
   <!-- 1. MARSIM: forest, GPU, spawn z=0.3 (our copy) -->
-  <include file="$(find ishb_bringup)/launch/marsim_forest.launch"/>
+  <arg name="lidar_type" default="mid360"/>
+
+  <include file="$(find ishb_bringup)/launch/marsim_forest.launch">
+    <arg name="lidar_type" value="$(arg lidar_type)"/>
+  </include>
 
   <!-- 2. FAST-LIO (stock, its rviz suppressed; adjust per step 1 findings) -->
   <include file="$(find fast_lio)/launch/mapping_marsim.launch">

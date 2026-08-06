@@ -1,7 +1,7 @@
 fsm:
   click_goal_en: true
   click_goal_topic: "/super/goal" #was "/goal" (Arrow 4)
-  click_height: 2.0
+  click_height: 0.25
   click_yaw_en: true
   replan_rate: 15.0
   cmd_topic: "/quad_0/planning/pos_cmd" #was "/planning/pos_cmd" (Arrow 1)
