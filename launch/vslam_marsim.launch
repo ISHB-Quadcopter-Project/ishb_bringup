@@ -1,0 +1,28 @@
+<launch>
+  <!-- Voxel-SLAM as the LIO, wired to impersonate FAST-LIO2's outputs.
+       Drop this in ishb_bringup/launch/  (sibling of super_marsim.launch).
+       Requires vslam_ws sourced so $(find voxel_slam) resolves. -->
+
+  <!-- Output topic names SUPER consumes. Defaults = stock FAST-LIO2 outputs.
+       VERIFY with the working FAST-LIO2 stack running:
+         rosnode info /laserMapping        # shows the odom + cloud topics it PUBLISHES
+       then set these two args to match exactly if they differ. -->
+  <arg name="odom_out"  default="/Odometry"/>
+  <arg name="cloud_out" default="/cloud_registered"/>
+
+  <!-- lid_topic / imu_topic are read from this yaml (NOT remaps), so they must be
+       set inside marsim_vslam.yaml:
+         lid_topic: "/quad0_pcl_render_node/sensor_cloud"
+         imu_topic: "/quad_0/imu"
+         lidar_type: 5      # TARTANAIR (MARSIM plain PointCloud2)
+         point_notime: 1 -->
+  <rosparam command="load" file="$(find voxel_slam)/config/marsim_vslam.yaml"/>
+  <param name="finish" value="false"/>
+
+  <node pkg="voxel_slam" type="voxelslam" name="voxelslam" output="screen">
+    <!-- patched node publishes nav_msgs/Odometry on /Odometry -> send it where SUPER listens -->
+    <remap from="/Odometry" to="$(arg odom_out)"/>
+    <!-- Voxel-SLAM's world-frame scan is /map_scan -> send it to the registered-cloud topic -->
+    <remap from="/map_scan" to="$(arg cloud_out)"/>
+  </node>
+</launch>

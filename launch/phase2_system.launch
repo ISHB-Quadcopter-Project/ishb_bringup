@@ -2,14 +2,24 @@
   <!-- 1. MARSIM: forest, GPU, spawn z=0.3 (our copy) -->
   <arg name="lidar_type" default="mid360"/>
 
+  <!-- odom_source: fastlio (default, unchanged behavior) | vslam (Voxel-SLAM swap-in) -->
+  <arg name="odom_source" default="fastlio"/>
+
   <include file="$(find ishb_bringup)/launch/marsim_forest.launch">
     <arg name="lidar_type" value="$(arg lidar_type)"/>
   </include>
 
-  <!-- 2. FAST-LIO (stock, its rviz suppressed; adjust per step 1 findings) -->
-  <include file="$(find fast_lio)/launch/mapping_marsim.launch">
-    <arg name="rviz" value="false"/>
-  </include>
+  <!-- 2a. FAST-LIO (stock, its rviz suppressed) -->
+  <group if="$(eval arg('odom_source') == 'fastlio')">
+    <include file="$(find fast_lio)/launch/mapping_marsim.launch">
+      <arg name="rviz" value="false"/>
+    </include>
+  </group>
+
+  <!-- 2b. Voxel-SLAM (swap-in; publishes the same odom + cloud topics SUPER expects) -->
+  <group if="$(eval arg('odom_source') == 'vslam')">
+    <include file="$(find ishb_bringup)/launch/vslam_marsim.launch"/>
+  </group>
 
   <!-- 3. SUPER, remapped/configured (our launch: fsm_node, static TF bridge) -->
   <include file="$(find ishb_bringup)/launch/super_marsim.launch"/>

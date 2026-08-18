@@ -5,48 +5,55 @@ from geometry_msgs.msg import PoseStamped, Point
 import threading
 import math
 
-GOAL_TOL = 1.0 #Tolerance for checking whether odom reading match waypoint4
+GOAL_TOL = 0.3 #Tolerance for checking whether odom reading match waypoint4
 
 ##
 # @brief This node publishes waypoints to the /super/goal topic for the drone to follow
 # @details Also, it includes a watchdog mechanism to republish the current waypoint if the drone is not moving towards it.
 class ourNode:
     def __init__(self): 
+        # self.waypts = [
+        #     {'x': 15.0, 'y': -3.0, 'z': 2.0},
+        #     {'x': 0.0, 'y': -6.0, 'z': 2.0},
+        #     {'x': 15.0, 'y': -9.0, 'z': 2.0},
+        #     {'x': 0.0, 'y': -12.0, 'z': 2.0},
+        #     {'x': 15.0, 'y': -15.0, 'z': 2.0},
+        #     {'x': 0.0, 'y': -15.0, 'z': 2.0}
+        # ]
+
         self.waypts = [
-            {'x': 15.0, 'y': -3.0, 'z': 2.0},
-            {'x': 0.0, 'y': -6.0, 'z': 2.0},
-            {'x': 15.0, 'y': -9.0, 'z': 2.0},
-            {'x': 0.0, 'y': -12.0, 'z': 2.0},
-            {'x': 15.0, 'y': -15.0, 'z': 2.0},
-            {'x': 0.0, 'y': -15.0, 'z': 2.0}
+            {'x': 0.0, 'y': 0.0, 'z': 0.55},
+            {'x': 2.0, 'y': -1.833, 'z': 0.55},
+            {'x': 4.0, 'y': -3.667, 'z': 0.55},
+            {'x': 6.0, 'y': -5.5, 'z': 0.55},
+            {'x': 8.0, 'y': -7.333, 'z': 0.55},
+            {'x': 10.0, 'y': -9.167, 'z': 0.55},
+            {'x': 12.0, 'y': -11.0, 'z': 0.55},
+            {'x': 14.0, 'y': -8.833, 'z': 0.55},
+            {'x': 16.0, 'y': -6.667, 'z': 0.55},
+            {'x': 18.0, 'y': -4.5, 'z': 0.55},
+            {'x': 20.0, 'y': -2.333, 'z': 0.55},
+            {'x': 22.0, 'y': -0.167, 'z': 0.55},
+            {'x': 24.0, 'y': 2.0, 'z': 0.55},
+            {'x': 26.0, 'y': -0.167, 'z': 0.55},
+            {'x': 28.0, 'y': -2.333, 'z': 0.55},
+            {'x': 30.0, 'y': -4.5, 'z': 0.55},
+            {'x': 32.0, 'y': -6.667, 'z': 0.55},
+            {'x': 34.0, 'y': -8.833, 'z': 0.55},
+            {'x': 36.0, 'y': -11.0, 'z': 0.55},
+            {'x': 38.0, 'y': -8.833, 'z': 0.55},
+            {'x': 40.0, 'y': -6.667, 'z': 0.55},
+            {'x': 42.0, 'y': -4.5, 'z': 0.55},
+            {'x': 44.0, 'y': -2.333, 'z': 0.55},
+            {'x': 46.0, 'y': -0.167, 'z': 0.55},
+            {'x': 48.0, 'y': 2.0, 'z': 0.55},
         ]
 
         # self.waypts = [
-        #     {'x': 2.0, 'y': -2.5, 'z': 2.0},
-        #     {'x': 4.0, 'y': -5.0, 'z': 2.0},
-        #     {'x': 6.0, 'y': -7.5, 'z': 2.0},
-        #     {'x': 8.0, 'y': -10.0, 'z': 2.0},
-        #     {'x': 10.0, 'y': -12.5, 'z': 2.0},
-        #     {'x': 12.0, 'y': -15.0, 'z': 2.0},
-        #     {'x': 14.0, 'y': -12.167, 'z': 2.0},
-        #     {'x': 16.0, 'y': -9.333, 'z': 2.0},
-        #     {'x': 18.0, 'y': -6.5, 'z': 2.0},
-        #     {'x': 20.0, 'y': -3.667, 'z': 2.0},
-        #     {'x': 22.0, 'y': -0.833, 'z': 2.0},
-        #     {'x': 24.0, 'y': 2.0, 'z': 2.0},
-        #     {'x': 26.0, 'y': -0.833, 'z': 2.0},
-        #     {'x': 28.0, 'y': -3.667, 'z': 2.0},
-        #     {'x': 30.0, 'y': -6.5, 'z': 2.0},
-        #     {'x': 32.0, 'y': -9.333, 'z': 2.0},
-        #     {'x': 34.0, 'y': -12.167, 'z': 2.0},
-        #     {'x': 36.0, 'y': -15.0, 'z': 2.0},
-        #     {'x': 38.0, 'y': -12.167, 'z': 2.0},
-        #     {'x': 40.0, 'y': -9.333, 'z': 2.0},
-        #     {'x': 42.0, 'y': -6.5, 'z': 2.0},
-        #     {'x': 44.0, 'y': -3.667, 'z': 2.0},
-        #     {'x': 46.0, 'y': -0.833, 'z': 2.0},
-        #     {'x': 48.0, 'y': 2.0, 'z': 2.0},
+        #     {'x': 0.0, 'y': 0.0, 'z': 0.25},
+        #     {'x': 48, 'y': 0.0, 'z': 0.45},
         # ]
+
 
         self.waypt_index = 0 
 
@@ -75,7 +82,9 @@ class ourNode:
         self.msg.header.stamp = rospy.Time.now() #time stamp for msg
         self.msg.header.frame_id = "world" #frame of message
 
-        # print(self.waypt_index)
+        print("HERE is waypt index: ", self.waypt_index)
+        print("HERE is waypt index: ", self.waypts[self.waypt_index])
+
         self.msg.pose.position.x = self.waypts[self.waypt_index]["x"]
         self.msg.pose.position.y = self.waypts[self.waypt_index]["y"]
         self.msg.pose.position.z = self.waypts[self.waypt_index]["z"]
@@ -85,7 +94,8 @@ class ourNode:
 
     def odom_cb(self, msg):
         """!@brief Callback function for the /Odometry topic
-            @details Updates the latest odometry position and sets the is_odom flag to True. Odom data is stored in a list for the odom_watchdog to check if the drone is moving.
+            @details Updates the latest odometry pif self.all_persisted_array.shape == (0,):
+            self.all_persisted_array = persistedosition and sets the is_odom flag to True. Odom data is stored in a list for the odom_watchdog to check if the drone is moving.
             @note self.lock is used to ensure other areas of code using odom data don't get partial data, as this callback is in a separate thread
             @param msg The Odometry message received from the /Odometry topic"""
         
@@ -113,11 +123,12 @@ class ourNode:
         squared_sum = pow(dist_x, 2) + pow(dist_y, 2) + pow(dist_z, 2)
 
         distance = math.sqrt(squared_sum)
-        # print("D: ", distance)
+        print("D: ", distance)
         if distance < GOAL_TOL:
             print("waypt reached")
 
             if self.waypt_index < len(self.waypts)-1:
+                print("INCR WAYPOINT INDEX")
                 self.waypt_index += 1
             
             self.publ() #Once reached waypoint, publish next one, instead of spamming in run
@@ -132,12 +143,15 @@ class ourNode:
         if len(self.odom_list) > 50:
             delta_x = self.odom_list[-1].x - self.odom_list[0].x #last odom x - first odom x, to see if drone moved in x direction
             delta_y = self.odom_list[-1].y - self.odom_list[0].y
+            delta_z = self.odom_list[-1].z - self.odom_list[0].z
 
-            if abs(delta_x) < 0.5 and abs(delta_y) < 0.5: #Checking if odom x and y changed, if so then publish goal again so drone move
-                print("Delta x: ", delta_x)
-                print("Delta y: ", delta_y)
+            print("Delta x: ", delta_x)
+            print("Delta y: ", delta_y)
+            print("Delta z: ", delta_z)
+
+            if abs(delta_x) < 0.5 and abs(delta_y) < 0.5 and abs(delta_z) < 0.5: #and abs(delta_z) < 0.5: #Checking if odom x,y,z not changed much, if so then publish goal again so drone move
+                print("---I AM HAVING---")
                 self.publ()
-
             self.odom_list.clear()
 
     def run(self):
@@ -147,12 +161,10 @@ class ourNode:
             @see dist_to_goal"""
         
         while(not rospy.is_shutdown()): #TODO add smt when do FSM
-
             self.odom_watchdog() #watchdog here to run to republish if not moving, and checks length of list
-
+                                # print("NOW HERE")
             with self.lock:
                 if self.is_odom == True:
-                    # print("NOW HERE")
                     odom = self.latest_pos
                     self.dist_to_goal(odom) # only runs when odom is set
 
