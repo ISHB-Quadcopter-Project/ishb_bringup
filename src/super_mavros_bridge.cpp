@@ -1,83 +1,151 @@
-#include <ros/ros.h>
+
+    #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <quadrotor_msgs/PositionCommand.h>
-// Global variable to store vehicle status
-mavros_msgs::State current_state;
-int staleness_threshold = 5;
-int last_command_time_ ros::Time::now();
-mavros_msgs::PositionTarget target;
-mavros_msgs::PositionTarget last_target;
-uint16 MASK = 0; //nothgn masked out
+#include <string>       
 
-// Callback function (similar to your Python callback)
-void state_cb(const mavros_msgs::State::ConstPtr& msg){
-    current_state = *msg;
-}
-/// @brief A short description of the function.
-/// @param x The first input coordinate.
-/// @return True if successful, false otherwise.
 
-// terrible job, gotta make classses 
-void super_sub_cb(const quadrotor_msgs::PositionCommand::ConstPtr& msg){
+class mavros_super_bridge_node{
 
-    target.header.stamp = ros::Time::now();
-    target.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-    last_command_time_ = ros::Time::now();
-    
-    target.type_mask = MASK;  
-    target.position.x = msg->position.x;
-    target.position.y = msg->position.y;
-    target.position.z = msg->position.z;
 
-    target.velocity.x = msg->velocity.x;
-    target.velocity.y = msg->velocity.y;
-    target.velocity.z = msg->velocity.z;
+public:
 
-    target.acceleration_or_force.x = msg->acceleration.x;
-    target.acceleration_or_force.y = msg->acceleration.y;
-    target.acceleration_or_force.z = msg->acceleration.z;
+        mavros_super_bridge_node(ros::NodeHandle& nh){ 
+                last_command_time = ros::Time::now();
+                state_sub = nh.subscribe("mavros/state", 1,  &mavros_super_bridge_node::state_cb, this);
+                super_sub = nh.subscribe("quad_0/planning/pos_cmd", 1,  &mavros_super_bridge_node::super_sub_cb, this);
+                bridge_pub = nh.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 5);
+                timer = nh.createTimer(ros::Duration(0.0111), &mavros_super_bridge_node::timerCallback,this); 
+                ///super runs at 100hz, but this gon run , pubish at 90 to give a lil gap 
 
-    target.yaw = msg->yaw;
-    target.yaw_rate = msg->yaw_dot;
-    
-}
+
+        };
 
 
 
+private: 
 
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "offboard_node");
-    ros::NodeHandle nh;
-
-    // Subscriber and Publisher
-    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
-            ("mavros/state", 10, state_cb);
-
-    /// subscribe to super command messages
-    ros::Subscriber super_sub = nh.subscribe<quadrotor_msgs::PositionCommand>
-            ("/planning/pos_cmd", 100,super_sub_cb);
-            
+        const uint16_t MASK = 0;
+        mavros_msgs::State curr_state;
+        //curr mav_target is still a quadrotor_msgs /Positon Command, not translated or verified yet
+        quadrotor_msgs::PositionCommand::ConstPtr super_target; 
+        // last mav_target is translated to mavros_msgs/PositionTarget    
+        mavros_msgs::PositionTarget Last_Target; 
+        bool last_target_up = false;
+        mavros_msgs::PositionTarget mav_target;
+        ros::Subscriber state_sub;
+        ros::Subscriber super_sub;
+        ros::Publisher bridge_pub;
+        ros::Timer timer; 
+        const float time_threshold = 0.4; //in seconds, min pub time is every .5 seconds for offboard to keep
+        ros::Time last_command_time;
    
-    ros::Publisher bridge_pub = nh.advertise<mavros_msgs::PositionTarget>
-            ("setpoint_raw/local", 10);
+
+    void state_cb(const mavros_msgs::State::ConstPtr& msg){
+        curr_state = *msg;
+    };
+
+    void super_sub_cb(const quadrotor_msgs::PositionCommand::ConstPtr& msg){
+
+        super_target = msg; //just copying the constptr, not actually value copy
+        
+        last_command_time = ros::Time::now();
+
+    };
+
+    void timerCallback(const ros::TimerEvent&){
+//sample trajectory
+                // mav_target.header.stamp = ros::Time::now();
+                // mav_target.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+                // mav_target.type_mask = MASK;  
+                // mav_target.position.x = 1;
+                // mav_target.position.y = 5;
+                // mav_target.position.z = 2;
+
+                // mav_target.velocity.x = 0;
+                // mav_target.velocity.y = 0;
+                // mav_target.velocity.z = 0;
+
+                // mav_target.acceleration_or_force.x = 0;
+                // mav_target.acceleration_or_force.y = 0;
+                // mav_target.acceleration_or_force.z = 0;
+
+                // mav_target.yaw = 0;
+                // mav_target.yaw_rate = 2;
+                // bridge_pub.publish(mav_target);
 
 
-            
-    // Clients for Services (Arming and Mode switching)
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
-            ("mavros/cmd/arming");
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
-            ("mavros/set_mode");
+
+        // check if super target null and if stale
+
+
+// Ensure super_target is converted to a C-string if it is a std::string
+
+// if (!super_target) {
+// ROS_INFO("i null");}
+
+// Check the threshold condition
+// bool is_under_threshold = (ros::Time::now() - last_command_time).toSec() < time_threshold;
+
+// // Print the boolean result as text
+// ROS_INFO("Within time threshold: %s", is_under_threshold ? "true" : "false");
+
+        if ((super_target) &&   ((ros::Time::now() - last_command_time).toSec() < time_threshold)) {
+                mav_target.header.stamp = ros::Time::now();
+                mav_target.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+                
+                mav_target.type_mask = MASK;  
+                mav_target.position.x = super_target->position.x;
+                mav_target.position.y = super_target->position.y;
+                mav_target.position.z = super_target->position.z;
+
+                mav_target.velocity.x = super_target->velocity.x;
+                mav_target.velocity.y = super_target->velocity.y;
+                mav_target.velocity.z = super_target->velocity.z;
+
+                mav_target.acceleration_or_force.x = super_target->acceleration.x;
+                mav_target.acceleration_or_force.y = super_target->acceleration.y;
+                mav_target.acceleration_or_force.z = super_target->acceleration.z;
+
+                mav_target.yaw = super_target->yaw;
+                mav_target.yaw_rate = super_target->yaw_dot;
 
 
 
-    ros::Timer timer = nh.createTimer(ros::Duration(0.0111), timerCallback); 
-    ///super runs at 100hz, but this gon run , pubish at 90 to give a lil gap 
-    return 0;
+                
+                bridge_pub.publish(mav_target);
+            Last_Target = mav_target;
+            last_target_up = true; 
+        //if last target up then we can use it, if not then just dont publish
+        } else if (last_target_up){
+        
+            bridge_pub.publish(Last_Target);
+        }
+
+
+        
+    };
+
+
+};
+
+
+
+int main(int argc, char** argv){
+        //rosnode list will show bridge_node
+        ros::init(argc, argv, "bridge_node");
+
+        ros::NodeHandle bridge_node;
+        
+        mavros_super_bridge_node bridge_ob(bridge_node);
+
+        ros::spin();
+   return 0; 
+
+
 }
+
