@@ -1,0 +1,14 @@
+<launch>
+  <!-- L2 twin of phase2_system.launch. Real Unitree L2 replaces MARSIM + the
+       lidar_type/odom_source switches; everything above SLAM is unchanged. -->
+
+  <!-- 1+2. L2 driver + Voxel-SLAM (replaces marsim_forest.launch + vslam_marsim.launch) -->
+  <include file="$(find ishb_bringup)/launch/vslam_l2.launch"/>
+
+  <!-- 3. SUPER, remapped/configured (unchanged: fsm_node, static TF bridge) -->
+  <include file="$(find ishb_bringup)/launch/super_marsim.launch"/>
+
+  <!-- 4. Our one RViz (unchanged) -->
+  <node pkg="rviz" type="rviz" name="ishb_rviz"
+        args="-d $(find ishb_bringup)/rviz/phase2.rviz"/>
+</launch>

@@ -1,0 +1,31 @@
+<launch>
+  <!-- Voxel-SLAM fed by the real Unitree L2. Sibling of vslam_marsim.launch;
+       replaces marsim_forest.launch + vslam_marsim.launch as the sensor/LIO source.
+       Requires ishb_ws sourced (it overlays vslam_ws), so both $(find voxel_slam)
+       and $(find unitree_lidar_ros) resolve. -->
+
+  <arg name="odom_out"   default="/Odometry"/>
+  <arg name="cloud_out"  default="/cloud_registered"/>
+  <arg name="replay"     default="false"/>  <!-- true: feed from a bag played with the clock flag, no driver -->
+  <arg name="driver_cfg" default="$(find ishb_bringup)/config/unilidar_l2_driver.yaml"/>
+
+  <!-- Live sensor => wall clock; bag replay => /clock. -->
+  <param name="/use_sim_time" value="$(arg replay)"/>
+
+  <!-- L2 driver. Name is load-bearing: params must land in /unitree_lidar_ros_node/ -->
+  <group unless="$(arg replay)">
+    <node pkg="unitree_lidar_ros" type="unitree_lidar_ros_node"
+          name="unitree_lidar_ros_node" output="screen" respawn="true">
+      <rosparam command="load" file="$(arg driver_cfg)"/>
+    </node>
+  </group>
+
+  <!-- lid_topic / imu_topic / lidar_type / point_notime come from this yaml -->
+  <rosparam command="load" file="$(find voxel_slam)/config/vslam_l2.yaml"/>
+  <param name="finish" value="false"/>
+
+  <node pkg="voxel_slam" type="voxelslam" name="voxelslam" output="screen">
+    <remap from="/Odometry" to="$(arg odom_out)"/>
+    <remap from="/map_scan" to="$(arg cloud_out)"/>
+  </node>
+</launch>

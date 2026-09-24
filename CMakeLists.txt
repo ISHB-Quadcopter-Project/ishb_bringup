@@ -10,13 +10,16 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   mavros_msgs
   quadrotor_msgs
+  sensor_msgs
 )
+
+find_package(Eigen3 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp rospy mavros_msgs quadrotor_msgs
+  CATKIN_DEPENDS roscpp rospy mavros_msgs quadrotor_msgs sensor_msgs
 )
 
 ###########
@@ -25,6 +28,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ executable
@@ -36,4 +40,5 @@ add_dependencies(super_mavros_bridge ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link the executable against
 target_link_libraries(super_mavros_bridge
   ${catkin_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
 )
