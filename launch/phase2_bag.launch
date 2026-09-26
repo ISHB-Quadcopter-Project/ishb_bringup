@@ -1,0 +1,15 @@
+<launch>
+  <!-- Bag-replay twin of phase2_l2.launch. The bag supplies /cloud_registered,
+       /Odometry, /tf, /tf_static, and /clock (via rosbag play clock).
+       No sensor driver, no MARSIM, no Voxel-SLAM. -->
+
+  <!-- Must be set before any node starts; nodes read it only at init. -->
+  <param name="use_sim_time" value="true"/>
+
+  <!-- 3. SUPER, remapped/configured (unchanged: fsm_node, static TF bridge) -->
+  <include file="$(find ishb_bringup)/launch/super_marsim.launch"/>
+
+  <!-- 4. Our one RViz (unchanged) -->
+  <node pkg="rviz" type="rviz" name="ishb_rviz"
+        args="-d $(find ishb_bringup)/rviz/phase2.rviz"/>
+</launch>

@@ -1,4 +1,6 @@
 <launch>
+  <param name="use_sim_time" value="false"/>
+
   <!-- L2 twin of phase2_system.launch. Real Unitree L2 replaces MARSIM + the
        lidar_type/odom_source switches; everything above SLAM is unchanged. -->
 

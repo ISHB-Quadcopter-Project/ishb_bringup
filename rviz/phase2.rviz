@@ -43,7 +43,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: GlobalCloud
+    SyncSource: CUM
   - Class: rviz/Displays
     Help Height: 70
     Name: Displays
@@ -121,7 +121,7 @@ Visualization Manager:
           Marker Topic: /quad0_odom_visualization/robot
           Name: Robot
           Namespaces:
-            mesh: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 0.5
@@ -777,9 +777,7 @@ Visualization Manager:
       Marker Topic: /fsm_node/visualization/committed_traj
       Name: COMMITTED
       Namespaces:
-        committed_backup: true
-        committed_exp: true
-        committed_exp_waypoints: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -787,8 +785,7 @@ Visualization Manager:
       Marker Topic: /fsm_node/visualization/exp_traj
       Name: EXPECTED
       Namespaces:
-        exp_traj: true
-        exp_traj_waypoints: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -796,9 +793,7 @@ Visualization Manager:
       Marker Topic: /fsm_node/visualization/backup_traj
       Name: BACKUP
       Namespaces:
-        backup_traj: true
-        backup_traj_start: true
-        backup_traj_waypoints: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -832,8 +827,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10.316500663757324
-        Min Value: 0.06550000607967377
+        Max Value: 47.994998931884766
+        Min Value: 23.744998931884766
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -925,7 +920,7 @@ Visualization Manager:
       Color: 85; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -940,13 +935,13 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /TEXT
       Name: TEXT
       Namespaces:
-        text_messages: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -1080,7 +1075,7 @@ Visualization Manager:
       Color: 170; 85; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 255; 0; 0
@@ -1095,7 +1090,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 85; 87; 83
@@ -1119,7 +1114,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 39.81320571899414
+      Distance: 59.979286193847656
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1127,17 +1122,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -3.2538349628448486
-        Y: -1.475852131843567
+        X: 17.507455825805664
+        Y: 2.4680685997009277
         Z: 0.5043496489524841
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5597963333129883
+      Pitch: 0.634797215461731
       Target Frame: world
-      Yaw: 3.113382339477539
+      Yaw: 3.36838698387146
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 17.48538589477539
